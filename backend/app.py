@@ -1,5 +1,5 @@
 from fastapi import FastAPI # usada pra criar a web API a apartir de requisições HTTP e envia respostas em JSON
-from services.file_scanner import scan_directory  # importa a função de scanear diretorios
+from services.file_scanner import scan_and_split  # importa a função de scanear diretorios
 
 app = FastAPI() # a partir disso definir endpoints(rotas)
 
@@ -12,12 +12,10 @@ def root():
 # define uma rota POST 
 # recebe um json
 @app.post("/processar")
-def processar(diretorio: dict):
-
-    caminho = diretorio.get("caminho") # pega o valor da chave "caminho"
+def processar(payload: dict):
+    caminho = payload.get("caminho") # pega o valor da chave "caminho"
     # verificação de cainho
     if not caminho:
         return {"erro": "Caminho não informado."}
-
-    resultado = scan_directory(caminho)
-    return {"status": "ok", "resultado": resultado}
+    files_to_process = scan_and_split(caminho, split_pages=True)
+    return {"status": "ok", "Total": len(files_to_process), "files": files_to_process}
