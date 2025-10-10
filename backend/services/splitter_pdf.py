@@ -1,47 +1,63 @@
-from PyPDF2 import PdfReader, PdfWriter
-from typing import List
+import fitz  # PyMuPDF
 import os
 
-#nome da pasta que armazena os pfd's splitados
-SPLIT_FOLDER_NAME = '__splits__'
+def split_pdf_by_type(file_path):
+    """
+    Lê um PDF e separa os documentos internos com base em palavras-chave.
+    Identifica notas fiscais e recibos de locação.
+    """
 
-# função para dividir os pdf's caso o pdf tenha varias paginas com varios arquivos
-def split_pdf_by_page(file_path: str, output_base: str | None = None) -> List[str]:
+    # Abrir o PDF original
+    doc = fitz.open(file_path)
 
-    if output_base is None:
-        dir_of_file = os.path.dirname(file_path)
-        base_name = os.path.splitext(os.path.basename(file_path))[0]
-        output_base = os.path.join(dir_of_file, SPLIT_FOLDER_NAME, base_name)
-    
-    os.makedirs(output_base, exist_ok=True)
-
-    reader = PdfReader(file_path)
-
-    if getattr(reader, "is_encrypted", False):
-        try:
-            reader.decrypt("")
-        except Exception:
-            return []
-        
-    num_pages = len(reader.pages)
-
-    if num_pages < 1:
-        return [file_path]
-
+    # Variáveis de controle
     output_files = []
+    current_writer = fitz.open()
+    current_doc_index = 1
+    current_type = "desconhecido"
 
-    for i in range(num_pages):
-        writer = PdfWriter()
-        writer.add_page(reader.pages[i])
+    # Palavras-chave que identificam tipos de documentos
+    keywords = {
+        "nota": ["Nota Fiscal de Serviço", "NFS-e", "Prestação de Serviços"],
+        "recibo": ["Recibo de Locação", "Recibo de Pagamento", "Recibo"]
+    }
 
-        out_filename = f"{os.path.splitext(os.path.basename(file_path))}_page_{i+1}.pdf"
-        out_path = os.path.join(output_base, out_filename)
+    # Percorrer todas as páginas do PDF
+    for page_index in range(len(doc)):
+        page = doc.load_page(page_index)
+        text = page.get_text("text")
 
-    if not os.path.exists(out_path):
-        with open(out_path, "wb") as f_out:
-            writer.write(f_out)
+        # Verificar se a página contém uma das palavras-chave
+        found_type = None
+        for tipo, palavras in keywords.items():
+            if any(palavra.lower() in text.lower() for palavra in palavras):
+                found_type = tipo
+                break
 
-    output_files.append(out_path)
+        # Se achou um novo tipo e já temos páginas acumuladas, salvar o documento anterior
+        if found_type and current_writer.page_count > 0:
+            output_filename = f"{os.path.splitext(file_path)[0]}_{current_type}_{current_doc_index}.pdf"
+            current_writer.save(output_filename)
+            output_files.append(output_filename)
+            current_writer.close()
+
+            # Preparar o próximo documento
+            current_writer = fitz.open()
+            current_doc_index += 1
+            current_type = found_type
+
+        # Se ainda não temos um tipo, assume o atual (pode ser o primeiro documento)
+        if found_type and current_type == "desconhecido":
+            current_type = found_type
+
+        # Adiciona a página atual no PDF em montagem
+        current_writer.insert_pdf(doc, from_page=page_index, to_page=page_index)
+
+    # Salvar o último documento se ainda tiver conteúdo
+    if current_writer.page_count > 0:
+        output_filename = f"{os.path.splitext(file_path)[0]}_{current_type}_{current_doc_index}.pdf"
+        current_writer.save(output_filename)
+        output_files.append(output_filename)
+        current_writer.close()
 
     return output_files
-       

@@ -1,6 +1,6 @@
 import os
 from typing import List
-from services.splitter_pdf import split_pdf_by_page, SPLIT_FOLDER_NAME
+from services.splitter_pdf import split_pdf_by_type
 
 PDF_EXTS = {".pdf"}
 # XML_EXTS = {".xml"}
