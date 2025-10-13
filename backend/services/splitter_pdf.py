@@ -1,63 +1,123 @@
+# divide o pdf original em varios outros pdfs, identifica se no pdf original tem mais de uma nota 
+
 import fitz  # PyMuPDF
+# from typing import List
 import os
 
+# Divide as paginas do pdf em arquivos pdf individuais
+def split_pdf_by_page(file_path):
+    """
+    Separa cada página do PDF em arquivo individual.
+    """
+    try:
+        base_dir = os.path.dirname(file_path)
+        filename = os.path.splitext(os.path.basename(file_path))[0]
+        split_folder = os.path.join(base_dir, "split_pages", filename)
+
+        os.makedirs(split_folder, exist_ok=True)
+
+        doc = fitz.open(file_path)
+        output_files = []
+
+        for page_num in range(len(doc)):
+            # Cria um novo pdf para cada página
+            new_pdf = fitz.open()
+            new_pdf.insert_pdf(doc, from_page=page_num, to_page=page_num)
+
+            # Salva em um novo pdf (CORRIGIDO: adicionado número da página)
+            output_filename = os.path.join(split_folder, f"{filename}_page_{page_num + 1}.pdf")
+            new_pdf.save(output_filename)
+            new_pdf.close()
+
+            output_files.append(output_filename)
+
+        doc.close()
+        return output_files
+    
+    except Exception as e:
+        print(f"Erro ao separar PDF {file_path}: {str(e)}")
+        return []
+
+# separa as paginas do pdf agrupando por tipo de documento 
 def split_pdf_by_type(file_path):
     """
     Lê um PDF e separa os documentos internos com base em palavras-chave.
     Identifica notas fiscais e recibos de locação.
     """
+    try:
+        doc = fitz.open(file_path)
 
-    # Abrir o PDF original
-    doc = fitz.open(file_path)
+        # Variáveis de controle
+        base_dir = os.path.dirname(file_path)
+        filename = os.path.splitext(os.path.basename(file_path))[0]
+        split_folder = os.path.join(base_dir, "split_by_type")
 
-    # Variáveis de controle
-    output_files = []
-    current_writer = fitz.open()
-    current_doc_index = 1
-    current_type = "desconhecido"
+        os.makedirs(split_folder, exist_ok=True)
 
-    # Palavras-chave que identificam tipos de documentos
-    keywords = {
-        "nota": ["Nota Fiscal de Serviço", "NFS-e", "Prestação de Serviços"],
-        "recibo": ["Recibo de Locação", "Recibo de Pagamento", "Recibo"]
-    }
+        output_files = []
+        current_writer = None
+        current_doc_index = 1
+        current_type = None
 
-    # Percorrer todas as páginas do PDF
-    for page_index in range(len(doc)):
-        page = doc.load_page(page_index)
-        text = page.get_text("text")
+        # Palavras-chave que identificam tipos de documentos
+        keywords: dict[str, list[str]] = {
+            "nota": ["Nota Fiscal de Serviço", "NFS-e", "Prestação de Serviços", "NOTA FISCAL"],
+            "recibo": ["Recibo de Locação", "Recibo de Pagamento", "Recibo", "RECIBO"]
+        }
 
-        # Verificar se a página contém uma das palavras-chave
-        found_type = None
-        for tipo, palavras in keywords.items():
-            if any(palavra.lower() in text.lower() for palavra in palavras):
-                found_type = tipo
-                break
+        # Percorrer todas as páginas do PDF
+        for page_index in range(len(doc)):
+            page = doc.load_page(page_index)
+            text = page.get_text("text")
 
-        # Se achou um novo tipo e já temos páginas acumuladas, salvar o documento anterior
-        if found_type and current_writer.page_count > 0:
-            output_filename = f"{os.path.splitext(file_path)[0]}_{current_type}_{current_doc_index}.pdf"
+            # Verificar se a página contém uma das palavras-chave
+            found_type = None
+            for tipo, palavras in keywords.items():
+                # CORRIGIDO: iterar sobre cada palavra da lista
+                for palavra in palavras:
+                    if palavra.lower() in text.lower():
+                        found_type = tipo
+                        break
+                if found_type:
+                    break
+
+            if not found_type:
+                found_type = "desconhecido"
+
+            # Se mudou o tipo de documento
+            if current_type != found_type:
+                # Salvar documento anterior se existir
+                if current_writer is not None and current_writer.page_count > 0:
+                    output_filename = os.path.join(
+                        split_folder,
+                        f"{filename}_{current_type}_{current_doc_index}.pdf"
+                    )
+                    current_writer.save(output_filename)
+                    output_files.append(output_filename)
+                    current_writer.close()
+                    current_doc_index += 1  # CORRIGIDO: estava "current_doc_inde"
+                
+                # Iniciar novo documento
+                current_writer = fitz.open()
+                current_type = found_type
+
+            # CORRIGIDO: garantir que current_writer existe antes de usar
+            if current_writer is not None:
+                current_writer.insert_pdf(doc, from_page=page_index, to_page=page_index)
+            
+        # Salvar o último documento se ainda tiver conteúdo
+        if current_writer is not None and current_writer.page_count > 0:
+            output_filename = os.path.join(
+                split_folder,
+                f"{filename}_{current_type}_{current_doc_index}.pdf"
+            )
             current_writer.save(output_filename)
             output_files.append(output_filename)
             current_writer.close()
 
-            # Preparar o próximo documento
-            current_writer = fitz.open()
-            current_doc_index += 1
-            current_type = found_type
-
-        # Se ainda não temos um tipo, assume o atual (pode ser o primeiro documento)
-        if found_type and current_type == "desconhecido":
-            current_type = found_type
-
-        # Adiciona a página atual no PDF em montagem
-        current_writer.insert_pdf(doc, from_page=page_index, to_page=page_index)
-
-    # Salvar o último documento se ainda tiver conteúdo
-    if current_writer.page_count > 0:
-        output_filename = f"{os.path.splitext(file_path)[0]}_{current_type}_{current_doc_index}.pdf"
-        current_writer.save(output_filename)
-        output_files.append(output_filename)
-        current_writer.close()
-
-    return output_files
+        doc.close()
+        return output_files
+        
+    except Exception as e:
+        print(f"Erro ao separar PDF por tipo {file_path}: {str(e)}")
+        return []
