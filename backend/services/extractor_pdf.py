@@ -2,7 +2,7 @@
 
 import pdfplumber
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from concurrent.futures import ThreadPoolExecutor,  as_completed # bibloteca para manipular os threads do cpu
 import multiprocessing
 import queue
@@ -131,7 +131,7 @@ class PDFProcessingQueue:
 # ========================================================================
 # FUNÇÃO DE USO EXTERNO
 # ========================================================================
-def extract_pdf_data_server_safe(file_paths: List[str], max_workers: int = 2):
+def extract_pdf_data_server_safe(file_paths: List[str], max_workers: int = 8):
     """
     Função segura e recomendada para o servidor.
     Usa a fila interna de processamento.
