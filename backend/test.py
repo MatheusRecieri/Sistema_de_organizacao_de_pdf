@@ -14,7 +14,7 @@ from services.file_scanner import (
 )
 from services.extractor_pdf import extract_pdf_data
 
-base_path = "C:/Users/matheus.recieri/Desktop/testes_pdf - 06"
+base_path = "C:/Users/matheus.recieri/Desktop/testes_pdf"
 pdf_path = "C:/Users/matheus.recieri/Desktop/testes_pdf - 06/BIOAGRI - 60193.pdf"
     
 
@@ -379,7 +379,7 @@ def test_8_full_workflow(base_path):
         for data in extracted_data:
             try:
                 arquivo = data.get('arquivo')
-                tipo = data.get('tipo', 'Outros')
+                tipo = data.get('tipo', 'outros')
                 
                 # Determina pasta de destino
                 if "Nota Fiscal" in tipo:
