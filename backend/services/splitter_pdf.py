@@ -1,7 +1,5 @@
 # divide o pdf original em varios outros pdfs, identifica se no pdf original tem mais de uma nota 
-
-import fitz  # PyMuPDF
-# from typing import List
+import fitz  
 import os
 
 # Divide as paginas do pdf em arquivos pdf individuais
@@ -61,7 +59,7 @@ def split_pdf_by_type(file_path):
 
         # Palavras-chave que identificam tipos de documentos
         keywords: dict[str, list[str]] = {
-            "nota": ["Nota Fiscal de Serviço", "NFS-e", "Prestação de Serviços", "NOTA FISCAL"],
+            "nota": ["Nota Fiscal de Serviço", "NFS-e", "Prestação de Serviços", "NOTA FISCAL", "Nota Fiscal", "nota fiscal"],
             "recibo": ["Recibo de Locação", "Recibo de Pagamento", "Recibo", "RECIBO"]
         }
 
@@ -75,14 +73,14 @@ def split_pdf_by_type(file_path):
             for tipo, palavras in keywords.items():
                 # CORRIGIDO: iterar sobre cada palavra da lista
                 for palavra in palavras:
-                    if palavra.lower() in text.lower():
+                    if palavra.lower() in text.lower(): # pyright: ignore[reportAttributeAccessIssue]
                         found_type = tipo
                         break
                 if found_type:
                     break
 
             if not found_type:
-                found_type = "desconhecido"
+                found_type = "outros"
 
             # Se mudou o tipo de documento
             if current_type != found_type:

@@ -20,18 +20,18 @@ def extract_pdf_data(file_path: str) -> dict:
             elif "nota fiscal" in text.lower():
                 doc_type = "Nota Fiscal"
             else:
-                doc_type = "Desconhecido"
+                doc_type = "Outros"
 
-            # busca valores busando regex
+            # busca valor monetario busando regex
             valor = None
             match_valor = re.search(r"(\d{1,3}(?:\.\d{3})*,\d{2})", text)
 
             if match_valor:
                 valor = match_valor.group(1)
 
-                # busca valores busando regex
-                data = None
-                match_data = re.search(r"(\d{2}/\d{2}/\d{4})", text)
+            # busca data busando regex
+            data = None
+            match_data = re.search(r"(\d{2}/\d{2}/\d{4})", text)
 
             if match_data:
                 data = match_data.group(1)
