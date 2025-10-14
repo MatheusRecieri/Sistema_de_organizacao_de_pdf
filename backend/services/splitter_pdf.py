@@ -1,6 +1,7 @@
 # divide o pdf original em varios outros pdfs, identifica se no pdf original tem mais de uma nota 
 import fitz  
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 # Divide as paginas do pdf em arquivos pdf individuais
 def split_pdf_by_page(file_path):
@@ -119,3 +120,9 @@ def split_pdf_by_type(file_path):
     except Exception as e:
         print(f"Erro ao separar PDF por tipo {file_path}: {str(e)}")
         return []
+
+def parallel_split_pdfs(pdf_files):
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        results = list(executor.map(split_pdf_by_type, pdf_files))
+    flattened = [f for sublist in results for f in sublist if sublist]
+    return flattened

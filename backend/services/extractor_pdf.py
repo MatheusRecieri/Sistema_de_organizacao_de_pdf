@@ -5,15 +5,15 @@ import re
 from typing import Dict, List, Optional, Tuple
 from concurrent.futures import ThreadPoolExecutor,  as_completed # bibloteca para manipular os threads do cpu
 import multiprocessing
-import queue
 import threading
+
+REGEX_VALUE = re.compile(r'(\d{1,3}(?:\.\d{3})*,\d{2})')
+REGEX_DATE = re.compile(r'(\d{2}/\d{2}/\d{4})')
 
 # lê o pdf e extrai informações importantes
 def extract_pdf_data(file_path: str) -> Dict[str, Optional[str]]:
     try:
 
-        REGEX_VALUE = re.compile(r'(\d{1,3}(?:\.\d{3})*,\d{2})')
-        REGEX_DATE = re.compile(r'(\d{2}/\d{2}/\d{4})')
 
         #abre o pdf
         with pdfplumber.open(file_path) as pdf:
@@ -24,6 +24,9 @@ def extract_pdf_data(file_path: str) -> Dict[str, Optional[str]]:
 
             # leitrua inteligente, logo nas primeiras páginas
             max_pages = min(3, len(pdf.pages))
+
+            # heurisitca
+            # max_pages = 1 if len(pdf.pages) ,= 2 else 2 min(3, len(pdf.pages))
 
             for page_num in range(max_pages):
                 page_text = pdf.pages[page_num].extract_text() or ""
@@ -131,12 +134,31 @@ class PDFProcessingQueue:
 # ========================================================================
 # FUNÇÃO DE USO EXTERNO
 # ========================================================================
-def extract_pdf_data_server_safe(file_paths: List[str], max_workers: int = 8):
+def extract_pdf_data_server_safe(file_paths: List[str], max_workers: int = None):
+
     """
     Função segura e recomendada para o servidor.
     Usa a fila interna de processamento.
     """
-    queue_processor = PDFProcessingQueue(max_workers=max_workers)
-    queue_processor.add_files(file_paths)
-    queue_processor.start()
-    return queue_processor.get_results()
+
+    if max_workers is None:
+        max_workers = max(4, multiprocessing.cpu_count() - 1)
+    
+    results = []
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+
+        futures = [executor.submit(extract_pdf_data, path) for path in file_paths]
+
+        for future in as_completed(futures):
+            try:
+                results.append(future.result())
+            except Exception as e:
+                results.append({"arquivo": file_paths, "tipo": "Erro", "erro": str(e)})
+   
+    # queue_processor = PDFProcessingQueue(max_workers=max_workers)
+    # queue_processor.add_files(file_paths)
+    # queue_processor.start()
+    # return queue_processor.get_results()
+
+    return results
