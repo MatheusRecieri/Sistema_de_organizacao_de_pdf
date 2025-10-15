@@ -280,32 +280,32 @@ def test_optimized_workflow(base_path: str):
         print(f"⚠️  FORA DA META: {total_time/60:.2f}min > 15min")
 
 
-def test_9_organize_files(base_path):
+# def test_9_organize_files(base_path):
     """TESTE 9: Organizar arquivos em pastas por tipo"""
-    print_header("TESTE 9: Organizar Arquivos por Tipo")
+    # print_header("TESTE 9: Organizar Arquivos por Tipo")
     
-    # CONFIGURE ESTE CAMINHO
-    # base_path = "C:/Users/matheus.recieri/Desktop/Empresas/EmpresaABC/Contabil/2025"
+    # # CONFIGURE ESTE CAMINHO
+    # # base_path = "C:/Users/matheus.recieri/Desktop/Empresas/EmpresaABC/Contabil/2025"
     
-    print(f"\n  📁 Diretório: {base_path}")
-    print("  ⚠️  ATENÇÃO: Isso vai criar pastas e copiar arquivos!")
-    print("  💡 Descomente esta função no main() para executar")
+    # print(f"\n  📁 Diretório: {base_path}")
+    # print("  ⚠️  ATENÇÃO: Isso vai criar pastas e copiar arquivos!")
+    # print("  💡 Descomente esta função no main() para executar")
     
-    # return {}
+    # # return {}
     
-    # Descomente abaixo para executar de verdade:
-    if not os.path.exists(base_path):
-        print(f"  ❌ ERRO: Diretório não encontrado!")
-        return {}
+    # # Descomente abaixo para executar de verdade:
+    # if not os.path.exists(base_path):
+    #     print(f"  ❌ ERRO: Diretório não encontrado!")
+    #     return {}
     
-    try:
-        # copy_mode=True: COPIA (mantém originais)
-        # copy_mode=False: MOVE (remove originais)
-        stats = organize_files(base_path, copy_mode=True)
-        return stats
-    except Exception as e:
-        print(f"  ❌ ERRO: {str(e)}")
-        return {}
+    # try:
+    #     # copy_mode=True: COPIA (mantém originais)
+    #     # copy_mode=False: MOVE (remove originais)
+    #     stats = organize_files(base_path, copy_mode=True)
+    #     return stats
+    # except Exception as e:
+    #     print(f"  ❌ ERRO: {str(e)}")
+    #     return {}
 
 
 def main():

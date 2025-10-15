@@ -1,7 +1,7 @@
 import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import Dict, List
+from typing import Dict, List, Optional
 from services.extractor_pdf import extract_pdf_data
 from services.file_scanner import scan_directory
 import time
@@ -28,11 +28,12 @@ def process_single_file(args):
     
     try:
         data = extract_pdf_data(pdf_file)
+        type_document = data.get("tipo", "")
         
-        if "Nota Fiscal" in data.get("tipo", ""):
+        if type_document and "Nota Fiscal" in type_document:
             destination_folder = folders["notas_fiscais"]
             category = "notas_fiscais"
-        elif "Recibo" in data.get("tipo", ""):
+        elif type_document and "Recibo" in type_document:
             destination_folder = folders["recibos"]
             category = "recibos"
         else:
@@ -53,14 +54,14 @@ def process_single_file(args):
     except Exception as e:
         return {"status": "error", "file": pdf_file, "error": str(e)}
     
-def organize_files_parallel(base_path: str, max_workers: int = None, cpu_mode: bool = True) -> Dict[str, int]:
+def organize_files_parallel(base_path: str, max_workers: Optional[int] = None, cpu_mode: bool = True)-> Dict[str, int]:
 
-    print("Criando estrutura de pastas...")
+    # print("Criando estrutura de pastas...")
     folders = create_output_folders(base_path)
 
-    print("Escanenadno diretorio...")
+    # print("Escanenadno diretorio...")
     pdf_files = scan_directory(base_path)
-    print(f"Encontrados {len(pdf_files)} arquivos PDF")
+    # print(f"Encontrados {len(pdf_files)} arquivos PDF")
 
     if max_workers is None:
         max_workers = min(32, (os.cpu_count() or 1) * 4)
@@ -72,7 +73,7 @@ def organize_files_parallel(base_path: str, max_workers: int = None, cpu_mode: b
         "erros": 0
     }
 
-    print(f"⚡ Processando {len(pdf_files)} arquivos com {max_workers} workers...")
+    # print(f"⚡ Processando {len(pdf_files)} arquivos com {max_workers} workers...")
     start_time = time.time()
     
     # Prepara argumentos para multiprocessing
@@ -85,16 +86,16 @@ def organize_files_parallel(base_path: str, max_workers: int = None, cpu_mode: b
             try:
                 result = future.result()
                 
-                if result["status"] == "success":
-                    stats[result["category"]] += 1
-                    if i % 100 == 0 or i == len(pdf_files):
-                        print(f"📊 Progresso: {i}/{len(pdf_files)} - "
-                              f"NF: {stats['notas_fiscais']} | "
-                              f"Recibos: {stats['recibos']} | "
-                              f"Outros: {stats['outros']} | "
-                              f"Erros: {stats['erros']}")
-                else:
-                    stats["erros"] += 1
+                # if result["status"] == "success":
+                #     stats[result["category"]] += 1
+                #     if i % 100 == 0 or i == len(pdf_files):
+                #         print(f"📊 Progresso: {i}/{len(pdf_files)} - "
+                #               f"NF: {stats['notas_fiscais']} | "
+                #               f"Recibos: {stats['recibos']} | "
+                #               f"Outros: {stats['outros']} | "
+                #               f"Erros: {stats['erros']}")
+                # else:
+                #     stats["erros"] += 1
                     
             except Exception as e:
                 stats["erros"] += 1
