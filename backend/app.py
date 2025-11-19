@@ -1,6 +1,7 @@
 from fastapi import (
     FastAPI,
     HTTPException,
+    CORSMiddleware,
 )  # usada pra criar a web API a apartir de requisições HTTP e envia respostas em JSON
 from pydantic import BaseModel
 from services.file_scanner import scan_directory
