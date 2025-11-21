@@ -43,7 +43,7 @@ export default function Home() {
 
     try {
       const results = await apiService.processDirectory(selectedPath);
-      
+
       // DEBUG: Ver o que está vindo do backend
       console.log('========================================');
       console.log('Resposta do backend:', results);
@@ -53,20 +53,22 @@ export default function Home() {
       console.log('É array?', Array.isArray(results.files));
       console.log('Quantidade de files:', results.files?.length);
       console.log('========================================');
-      
+
       // Verificar se houve erro no backend
       if ('erro' in results && results.erro) {
         setError(results.erro);
-      } else { {
-        // Garantir que files seja sempre um array
-        const normalizedResults = {
-          ...results,
-          files: Array.isArray(results.files) ? results.files : [],
-          Total: results.Total || results.files?.length || 0,
-        };
-        
-        console.log('Dados normalizados:', normalizedResults);
-        setProcessingResults(normalizedResults);
+      } else {
+        {
+          // Garantir que files seja sempre um array
+          const normalizedResults = {
+            ...results,
+            files: Array.isArray(results.files) ? results.files : [],
+            Total: results.Total || results.files?.length || 0,
+          };
+
+          console.log('Dados normalizados:', normalizedResults);
+          setProcessingResults(normalizedResults);
+        }
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao processar diretório';
@@ -93,19 +95,17 @@ export default function Home() {
 
           {/* Status do Servidor */}
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white shadow-sm">
-            <Server className={`w-5 h-5 ${
-              serverStatus === 'online' ? 'text-green-500' :
-              serverStatus === 'offline' ? 'text-red-500' :
-              'text-yellow-500'
-            }`} />
-            <span className={`text-sm font-medium ${
-              serverStatus === 'online' ? 'text-green-700' :
-              serverStatus === 'offline' ? 'text-red-700' :
-              'text-yellow-700'
-            }`}>
+            <Server className={`w-5 h-5 ${serverStatus === 'online' ? 'text-green-500' :
+                serverStatus === 'offline' ? 'text-red-500' :
+                  'text-yellow-500'
+              }`} />
+            <span className={`text-sm font-medium ${serverStatus === 'online' ? 'text-green-700' :
+                serverStatus === 'offline' ? 'text-red-700' :
+                  'text-yellow-700'
+              }`}>
               {serverStatus === 'online' ? 'Servidor Online' :
-               serverStatus === 'offline' ? 'Servidor Offline' :
-               'Verificando...'}
+                serverStatus === 'offline' ? 'Servidor Offline' :
+                  'Verificando...'}
             </span>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function Home() {
         {/* Painel Direito - Status e Resultados */}
         <div className="space-y-6">
           {isProcessing && <ProcessingStatus />}
-          
+
           {processingResults && !isProcessing && (
             <ResultsDisplay results={processingResults} />
           )}
