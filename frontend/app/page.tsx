@@ -57,7 +57,7 @@ export default function Home() {
       // Verificar se houve erro no backend
       if ('erro' in results && results.erro) {
         setError(results.erro);
-      } else {
+      } else { {
         // Garantir que files seja sempre um array
         const normalizedResults = {
           ...results,
