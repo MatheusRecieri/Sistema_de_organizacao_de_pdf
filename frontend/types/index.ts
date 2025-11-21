@@ -1,16 +1,16 @@
 export interface ProcessResult {
-  arquivo: string
-  tipo: string
-  valor: string | null
-  data: string | null
+  arquivo: string;
+  tipo: string;
+  valor: string | null;
+  data: string | null;
   erro?: string;
 }
 
 export interface ProcessingResponse {
-  status: string
-  Total: number
-  files: string[]
-  results?: ProcessResult[]
+  status: string;
+  Total: number;
+  files: string[];
+  results?: ProcessResult[];
 }
 
 export interface DirectoryItem {
@@ -28,4 +28,8 @@ export interface ProcessingStats {
   erros: number
   total_valor_notas?: number,
   total_valor_recebidos?: number
+}
+
+export interface ResultsDisplayProps {
+  results: ProcessingResponse
 }

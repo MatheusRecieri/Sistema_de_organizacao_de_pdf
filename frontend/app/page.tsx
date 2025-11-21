@@ -24,8 +24,10 @@ export default function Home() {
     try {
       await apiService.checkHealth();
       setServerStatus('online');
+      setError('')
     } catch (error) {
       setServerStatus('offline');
+      setError('Não foi possível conectar ao servidor backend')
     }
   };
 
@@ -41,9 +43,35 @@ export default function Home() {
 
     try {
       const results = await apiService.processDirectory(selectedPath);
-      setProcessingResults(results);
+      
+      // DEBUG: Ver o que está vindo do backend
+      console.log('========================================');
+      console.log('Resposta do backend:', results);
+      console.log('Tipo de results:', typeof results);
+      console.log('results.files:', results.files);
+      console.log('Tipo de results.files:', typeof results.files);
+      console.log('É array?', Array.isArray(results.files));
+      console.log('Quantidade de files:', results.files?.length);
+      console.log('========================================');
+      
+      // Verificar se houve erro no backend
+      if ('erro' in results && results.erro) {
+        setError(results.erro);
+      } else {
+        // Garantir que files seja sempre um array
+        const normalizedResults = {
+          ...results,
+          files: Array.isArray(results.files) ? results.files : [],
+          Total: results.Total || results.files?.length || 0,
+        };
+        
+        console.log('Dados normalizados:', normalizedResults);
+        setProcessingResults(normalizedResults);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao processar diretório');
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao processar diretório';
+      setError(errorMessage);
+      console.error('Erro ao processar:', err);
     } finally {
       setIsProcessing(false);
     }
