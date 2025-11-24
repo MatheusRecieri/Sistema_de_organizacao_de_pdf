@@ -12,6 +12,6 @@ RUN npm run build
 # Etapa 2: Servindo conteúdo static com Nginx
 FROM nginx:alpine
 
-COPY --from=build /app/out ./nginx/nginx.conf:/etc/nginx/nginx.conf
+COPY --from=build /app/out /usr/share/nginx/html
 
 EXPOSE 80
