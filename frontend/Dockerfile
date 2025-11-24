@@ -11,6 +11,6 @@ RUN npm run build
 # Stage 2 - Nginx
 FROM nginx:stable-alpine
 
-COPY --from=build /app/out ./nginx/nginx.conf:/etc/nginx/nginx.conf
+COPY --from=build /app/out /usr/share/nginx
 
 EXPOSE 80
