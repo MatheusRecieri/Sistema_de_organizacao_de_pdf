@@ -12,7 +12,7 @@ RUN npm run build
 FROM nginx:stable-alpine
 
 RUN rm -rf /etc/nginx/conf.d/nginx.conf
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./nginx/nginx.conf /nginx/nginx.conf
 
 # ⬇️ Ajuste aqui conforme seu build (dist ou build)
 COPY --from=build ./frontend/out: /usr/share/nginx/html
