@@ -1,6 +1,5 @@
-# Etapa 1: Build
-FROM node:20 AS build
-
+# Stage 1 - Build do Frontend
+FROM node:18-alpine as build
 WORKDIR /app
 
 COPY package*.json ./
@@ -9,9 +8,13 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Etapa 2: Servindo conteúdo static com Nginx
-FROM nginx:alpine
+# Stage 2 - Nginx
+FROM nginx:stable-alpine
 
-COPY --from=build /app/out /usr/share/nginx/html
+RUN rm -rf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# ⬇️ Ajuste aqui conforme seu build (dist ou build)
+COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
