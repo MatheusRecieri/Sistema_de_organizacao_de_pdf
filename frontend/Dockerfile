@@ -11,8 +11,8 @@ RUN npm run build
 # Stage 2 - Nginx
 FROM nginx:stable-alpine
 
-RUN rm -rf /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN rm -rf /etc/nginx/conf.d/nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/nginx.conf
 
 # ⬇️ Ajuste aqui conforme seu build (dist ou build)
 COPY --from=build /app/dist /usr/share/nginx/html
