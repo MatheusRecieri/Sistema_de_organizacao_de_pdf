@@ -6,7 +6,7 @@ import DirectoryBrowser from '@/components/DirectoryBrowser';
 import ProcessingStatus from '@/components/ProcessingStatus';
 import ResultsDisplay from '@/components/ResultDisplay';
 import { apiService } from '@/lib/api';
-import { ProcessingResponse } from '@/types'; 
+import { ProcessingResponse } from '@/types';
 
 export default function Home() {
   const [selectedPath, setSelectedPath] = useState<string>('');
