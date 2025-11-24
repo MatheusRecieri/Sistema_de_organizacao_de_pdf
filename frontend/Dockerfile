@@ -15,6 +15,6 @@ RUN rm -rf /etc/nginx/conf.d/nginx.conf
 COPY nginx.conf /etc/nginx/conf.d/nginx.conf
 
 # ⬇️ Ajuste aqui conforme seu build (dist ou build)
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/build /usr/share/nginx/html
 
 EXPOSE 80
